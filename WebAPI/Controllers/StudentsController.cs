@@ -3,6 +3,7 @@ using Application.Features.Students.Commands.DeleteStudent;
 using Application.Features.Students.Commands.UpdateStudent;
 using Application.Features.Students.Queries.GetAllStudents;
 using Application.Features.Students.Queries.GetByIdStudent;
+using ClubUI.Application.Features.Students.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -53,6 +54,28 @@ namespace WebAPI.Controllers
         {
             var result = await _mediator.Send(new DeleteStudentCommand { Id = id });
             return Ok(result);
+        }
+        [HttpPost("verify-obs")]
+        public async Task<IActionResult> VerifyObs([FromBody] VerifyObsCommand command)
+        {
+            
+            var result = await _mediator.Send(command);
+
+            if (result)
+            {
+                return Ok(new
+                {
+                    success = true,
+                    message = "OBS Doğrulaması Başarılı! Sisteme giriş yapabilirsiniz."
+                });
+            }
+
+            
+            return NotFound(new
+            {
+                success = false,
+                message = "Öğrenci numarası OBS sisteminde bulunamadı!"
+            });
         }
 
     }

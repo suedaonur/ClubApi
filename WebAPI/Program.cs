@@ -36,6 +36,11 @@ namespace WebAPI
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Application.AssemblyReference).Assembly));
             builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            builder.Services.AddCors(options => {
+                options.AddPolicy("AllowAll", builder => {
+                    builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                });
+            });
             builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -46,6 +51,7 @@ namespace WebAPI
 
             var app = builder.Build();
             app.UseMiddleware<ExceptionMiddleware>();
+            app.UseCors("AllowAll");
 
 
             // Configure the HTTP request pipeline.
