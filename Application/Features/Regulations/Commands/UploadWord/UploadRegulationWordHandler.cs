@@ -8,6 +8,7 @@ using Domain.Entities;
 using MediatR;
 using DocumentFormat.OpenXml.Packaging;
 using System.Text;
+
 //ai la yaptm.
 namespace Application.Features.Regulations.Commands.UploadWord;
 

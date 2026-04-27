@@ -8,6 +8,6 @@ using Domain.Entities;
 
 namespace Application.Features.Students.Queries.GetAllStudents;
 
-public class GetAllStudentsQuery : IRequest<List<Student>>
+public class GetAllStudentsQuery : IRequest<List<Domain.Entities.Student>>
 {
 }

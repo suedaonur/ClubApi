@@ -11,10 +11,10 @@ namespace Application.Features.Students.Commands.DeleteStudent;
 
 public class DeleteStudentHandler : IRequestHandler<DeleteStudentCommand, bool>
 {
-    private readonly IGenericRepository<Student> _repository;
+    private readonly IGenericRepository<Domain.Entities.Student> _repository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public DeleteStudentHandler(IGenericRepository<Student> repository, IUnitOfWork unitOfWork)
+    public DeleteStudentHandler(IGenericRepository<Domain.Entities.Student> repository, IUnitOfWork unitOfWork)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;

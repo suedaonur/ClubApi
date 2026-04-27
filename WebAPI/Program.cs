@@ -1,9 +1,15 @@
 
+using Application.Behaviors;
 using Application.Interfaces;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using FluentValidation;
 using Infrastructure;
 using Infrastructure.Context;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Reflection;
+using WebAPI.Middleware;
 
 
 namespace WebAPI
@@ -28,9 +34,19 @@ namespace WebAPI
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Application.AssemblyReference).Assembly));
+            builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+            builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Sonsuz döngüye giren baðlý nesneleri JSON çözümü
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true; // Okunabilirlik için (isteðe baðlý)
+    });
 
             var app = builder.Build();
-           
+            app.UseMiddleware<ExceptionMiddleware>();
+
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -47,6 +63,13 @@ namespace WebAPI
 
             app.MapControllers();
 
+            // CORS Politikasý: Frontend'den gelen isteklere izin vermek için
+            app.UseCors(policy =>
+                policy.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyOrigin());
+
+            app.Run();
             app.Run();
         }
     }

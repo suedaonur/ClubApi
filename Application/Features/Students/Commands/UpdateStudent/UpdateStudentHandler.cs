@@ -11,10 +11,10 @@ namespace Application.Features.Students.Commands.UpdateStudent;
 
 public class UpdateStudentHandler : IRequestHandler<UpdateStudentCommand, bool>
 {
-    private readonly IGenericRepository<Student> _repository;
+    private readonly IGenericRepository<Domain.Entities.Student> _repository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateStudentHandler(IGenericRepository<Student> repository, IUnitOfWork unitOfWork)
+    public UpdateStudentHandler(IGenericRepository<Domain.Entities.Student> repository, IUnitOfWork unitOfWork)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;

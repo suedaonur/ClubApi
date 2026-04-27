@@ -29,7 +29,7 @@ public class CreateClubHandler : IRequestHandler<CreateClubCommand, int>
         };
 
         await _repository.AddAsync(club);
-        await _unitOfWork.SaveChangesAsync(); // Değişiklikleri veritabanına yazdırıyoruz
+        await _unitOfWork.SaveChangesAsync(); 
 
         return club.Id;
     }

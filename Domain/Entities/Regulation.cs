@@ -8,8 +8,8 @@ namespace Domain.Entities
 {
     public class Regulation : BaseEntity
     {
-        public string Title { get; set; } // [cite: 78]
-        public string TextContent { get; set; } // AI'nın okuyacağı metin [cite: 79]
-        public string Category { get; set; } // [cite: 80]
+        public string Title { get; set; } 
+        public string TextContent { get; set; } 
+        public string Category { get; set; } 
     }
 }

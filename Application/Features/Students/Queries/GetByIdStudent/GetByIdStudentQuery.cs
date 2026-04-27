@@ -7,7 +7,7 @@ using MediatR;
 using Domain.Entities;
 
 namespace Application.Features.Students.Queries.GetByIdStudent;
-public class GetByIdStudentQuery : IRequest<Student>
+public class GetByIdStudentQuery : IRequest<Domain.Entities.Student>
 {
     public int Id { get; set; }
 }

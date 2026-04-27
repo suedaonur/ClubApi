@@ -8,7 +8,9 @@ namespace Domain.Entities
 {
     public class Permission : BaseEntity
     {
-        public string Name { get; set; } // [cite: 56]
-        public string Description { get; set; } // [cite: 57]
+        public string Name { get; set; } 
+        public string Description { get; set; }
+        public string Code { get; set; }
+        public ICollection<RolePermission> RolePermissions { get; set; } //bir yetkinin hangi rollerde olduğu
     }
 }

@@ -54,5 +54,6 @@ namespace WebAPI.Controllers
             var result = await _mediator.Send(new DeleteStudentCommand { Id = id });
             return Ok(result);
         }
+
     }
 }

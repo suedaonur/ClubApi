@@ -14,4 +14,5 @@ public class CreatePostCommand : IRequest<int>
     public string Title { get; set; }
     public string Content { get; set; }
     public PostType Type { get; set; } // Articl e Event  Announcement Form 
+    public string RequiredPermission => "Post.Create";
 }
