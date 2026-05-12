@@ -1,25 +1,31 @@
-﻿using System;
+﻿using Application.DTOs;
+using Application.Interfaces;
+using AutoMapper;
+using Domain.Entities;
+using MediatR;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Application.Interfaces;
-using Domain.Entities;
-using MediatR;
 
 namespace Application.Features.Students.Queries.GetAllStudents;
-
-public class GetAllStudentsHandler : IRequestHandler<GetAllStudentsQuery, List<Domain.Entities.Student>>
+public class GetAllStudentsHandler : IRequestHandler<GetAllStudentsQuery, List<StudentDto>>
 {
-    private readonly IGenericRepository<Domain.Entities.Student> _repository;
+    private readonly IGenericRepository<Student> _repository;
+    private readonly IMapper _mapper;
 
-    public GetAllStudentsHandler(IGenericRepository<Domain.Entities.Student> repository)
+    public GetAllStudentsHandler(IGenericRepository<Student> repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
-    public async Task<List<Domain.Entities.Student>> Handle(GetAllStudentsQuery request, CancellationToken cancellationToken)
+    public async Task<List<StudentDto>> Handle(GetAllStudentsQuery request, CancellationToken cancellationToken)
     {
-        return await _repository.GetAllAsync();
+        var students = await _repository.GetAllAsync();
+
+        
+        return _mapper.Map<List<StudentDto>>(students);
     }
 }

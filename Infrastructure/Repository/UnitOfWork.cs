@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Application.Interfaces;
 using Infrastructure.Context;
 
+namespace Infrastructure.Repository;
 public class UnitOfWork : IUnitOfWork
 {
     private readonly AppDbContext _context;

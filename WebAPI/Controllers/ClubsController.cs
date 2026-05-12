@@ -4,12 +4,14 @@ using Application.Features.Clubs.Commands.UpdateClub;
 using Application.Features.Clubs.Queries.GetAllClubs;
 using Application.Features.Clubs.Queries.GetByIdClub;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ClubsController : ControllerBase

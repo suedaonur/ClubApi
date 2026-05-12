@@ -1,16 +1,20 @@
 ﻿using Application.Features.Students.Commands.CreateStudent;
 using Application.Features.Students.Commands.DeleteStudent;
+using Application.Features.Students.Commands.LoginStudent;
+using Application.Features.Students.Commands.RegisterStudent;
 using Application.Features.Students.Commands.UpdateStudent;
 using Application.Features.Students.Queries.GetAllStudents;
 using Application.Features.Students.Queries.GetByIdStudent;
 using ClubUI.Application.Features.Students.Commands;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 
 namespace WebAPI.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class StudentsController : ControllerBase
@@ -76,6 +80,29 @@ namespace WebAPI.Controllers
                 success = false,
                 message = "Öğrenci numarası OBS sisteminde bulunamadı!"
             });
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(RegisterStudentCommand command)
+        {
+            var result = await _mediator.Send(command);
+            if (result)
+            {
+                return Ok(new { message = "Kayıt başarıyla tamamlandı! Giriş yapabilirsiniz." });
+            }
+            return BadRequest(new { message = "Kayıt başarısız. Öğrenci numarası bulunamadı veya zaten kayıtlı." });
+        }
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginStudentCommand command)
+        {
+            var result = await _mediator.Send(command);
+
+            if (result != null)
+            {
+                return Ok(result); 
+            }
+
+            return Unauthorized(new { message = "Öğrenci numarası veya şifre hatalı!" });
         }
 
     }

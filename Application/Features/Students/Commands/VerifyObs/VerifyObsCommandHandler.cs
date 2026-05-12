@@ -1,14 +1,9 @@
-﻿using Application.Interfaces; 
-using Domain.Entities;      
+﻿using Application.Interfaces;
+using Domain.Entities;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
+using Microsoft.Extensions.Logging;
 using ClubUI.Application.Features.Students.Commands;
-using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Application.Features.Students.Handlers;
@@ -17,29 +12,48 @@ public class VerifyObsCommandHandler : IRequestHandler<VerifyObsCommand, bool>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IGenericRepository<Student> _studentRepository;
+    private readonly ILogger<VerifyObsCommandHandler> _logger;
 
-    public VerifyObsCommandHandler(IUnitOfWork unitOfWork, IGenericRepository<Student> studentRepository)
+    
+    public VerifyObsCommandHandler(
+        IUnitOfWork unitOfWork,
+        IGenericRepository<Student> studentRepository,
+        ILogger<VerifyObsCommandHandler> logger)
     {
         _unitOfWork = unitOfWork;
         _studentRepository = studentRepository;
+        _logger = logger;
     }
 
     public async Task<bool> Handle(VerifyObsCommand request, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(request.StudentNumber))
+        
+        _logger.LogInformation("{StudentNumber} numaralı öğrenci için OBS doğrulaması başlatıldı.", request.StudentNumber);
+
+       
+        if (string.IsNullOrWhiteSpace(request.StudentNumber))
         {
-            Console.WriteLine("DİKKAT: Numaraya ulaşılamadı, veri null geldi!");
+            _logger.LogWarning("OBS doğrulaması başarısız: Öğrenci numarası boş veya hatalı geldi.");
             return false;
         }
 
-        Console.WriteLine($"Gelen Numarayı Yakaladık: {request.StudentNumber}");
+        
         var student = await _studentRepository.GetAsync(x => x.StudentNumber.Trim() == request.StudentNumber.Trim());
 
-        if (student == null) return false;
+        
+        if (student == null)
+        {
+            _logger.LogWarning("{StudentNumber} numaralı öğrenci sistemde kayıtlı değil!", request.StudentNumber);
+            return false;
+        }
 
+        
         student.IsObsVerified = true;
         _studentRepository.Update(student);
         await _unitOfWork.SaveChangesAsync();
+
+        
+        _logger.LogInformation("{StudentNumber} numaralı öğrenci başarıyla doğrulandı.", request.StudentNumber);
 
         return true;
     }
