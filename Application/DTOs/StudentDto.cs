@@ -8,6 +8,7 @@ namespace Application.DTOs;
 
 public class StudentDto
 {
+    public StudentDto() { }
     public int Id { get; set; }
     public string StudentNumber { get; set; }
     public string FullName { get; set; }

@@ -13,4 +13,5 @@ namespace Domain.Entities
         public string Code { get; set; }
         public ICollection<RolePermission> RolePermissions { get; set; } //bir yetkinin hangi rollerde olduğu
     }
+    
 }

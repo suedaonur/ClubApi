@@ -13,9 +13,10 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        // Student -> StudentDto dönüşümüne izin ver
+        
         CreateMap<Student, StudentDto>().ReverseMap();
 
-        // Buraya ileride Club -> ClubDto gibi diğer eşleştirmeleri de ekleyeceğiz
+        CreateMap<ClubMember, StudentClubDto>()
+    .ForMember(dest => dest.ClubName, opt => opt.MapFrom(src => src.Club.Name));
     }
 }

@@ -27,7 +27,7 @@ public class CreateClubHandler : IRequestHandler<CreateClubCommand, int>
             Name = request.Name,
             Description = request.Description
         };
-
+      
         await _repository.AddAsync(club);
         await _unitOfWork.SaveChangesAsync(); 
 

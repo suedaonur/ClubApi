@@ -18,9 +18,6 @@ using System.Reflection;
 using System.Text;
 using WebAPI.Middleware;
 
-
-
-
 namespace WebAPI
 {
     public class Program
@@ -29,109 +26,127 @@ namespace WebAPI
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // --- 1. CONTROLLERS & JSON AYARLARI ---
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    // Sonsuz döngüleri (Cycle) engellemek için
+                    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                    options.JsonSerializerOptions.WriteIndented = true;
+                });
 
-            builder.Services.AddControllers();
-           
-           
+            // --- 2. SWAGGER & JWT TANIMLAMASI ---
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(opt =>
             {
-                // 1. Güvenlik Tanýmý
-                opt.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                opt.SwaggerDoc("v1", new OpenApiInfo { Title = "Club Management API", Version = "v1" });
+
+                opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                    Description = "Lütfen buraya 'Bearer [token]' þeklinde giriþ yapýn.",
+                    In = ParameterLocation.Header,
+                    Description = "Lütfen sadece token metnini buraya yapýþtýrýn.",
                     Name = "Authorization",
-                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+                    Type = SecuritySchemeType.Http,
                     BearerFormat = "JWT",
-                    Scheme = "bearer"
+                    Scheme = "Bearer"
                 });
 
-                // 2. Güvenlik Gereksinimi
-                opt.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
-        {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-            {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                opt.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            System.Array.Empty<string>()
-        }
-    });
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                        },
+                        System.Array.Empty<string>()
+                    }
+                });
             });
 
+            // --- 3. VERÝTABANI & REPOSITORY KAYITLARI ---
             builder.Services.AddDbContext<AppDbContext>(options =>
-       options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-            // Repository ve Unit of Work kayýtlarý
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-            builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Application.AssemblyReference).Assembly));
-            builder.Services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
-            builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));          
-            builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PermissionBehavior<,>));
+
+            // --- 4. MEDIATR & FLUENTVALIDATION & BEHAVIORS ---
+            var assembly = typeof(Application.AssemblyReference).Assembly;
+            builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
+            builder.Services.AddValidatorsFromAssembly(assembly);
+            builder.Services.AddAutoMapper(assembly);
+
+            
             builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            //builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PermissionBehavior<,>));
+
+            // --- 5. AUTHENTICATION (KÝMLÝK) & AUTHORIZATION (YETKÝ) ---
             builder.Services.AddScoped<JwtProvider>();
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
-        {   options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-        };
-    });
-            builder.Services.AddAutoMapper(typeof(Application.AssemblyReference).Assembly);
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+                        ClockSkew = TimeSpan.Zero
+                    };
+
+                    // Hata ayýklama loglarý (Debug penceresinde görünür)
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnAuthenticationFailed = context => {
+                            System.Diagnostics.Debug.WriteLine("!!! JWT HATASI: " + context.Exception.Message);
+                            return Task.CompletedTask;
+                        },
+                        OnChallenge = context => {
+                            System.Diagnostics.Debug.WriteLine("!!! UYARI: Sunucuya token gelmedi veya format hatalý.");
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
+
+            builder.Services.AddAuthorization(); 
+
+            // --- 6. CORS & LOGGING ---
             builder.Services.AddCors(options => {
-                options.AddPolicy("AllowAll", builder => {
-                    builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                options.AddPolicy("AllowAll", policy => {
+                    policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
                 });
             });
+
             Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
             builder.Host.UseSerilog();
-            builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        // Sonsuz döngüye giren baðlý nesneleri JSON çözümü
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-        options.JsonSerializerOptions.WriteIndented = true; // Okunabilirlik için (isteðe baðlý)
-    });
-
+        
             var app = builder.Build();
-            app.UseMiddleware<ExceptionMiddleware>();
-            app.UseCors("AllowAll");
-            app.UseAuthentication(); 
-            app.UseAuthorization();
 
-            // Configure the HTTP request pipeline.
+            // --- PIPELINE SIRALAMASI (BURASI HAYATÝ ÖNEMDEDÝR) ---
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-                
             }
 
+            app.UseMiddleware<ExceptionMiddleware>();
+
             app.UseHttpsRedirection();
+            app.UseRouting();
 
-            app.UseAuthorization();
+            
+            app.UseCors("AllowAll");
 
+            app.UseAuthentication(); 
+            app.UseAuthorization();  
 
             app.MapControllers();
 
-            // CORS Politikasý: Frontend'den gelen isteklere izin vermek için
-            app.UseCors(policy =>
-                policy.AllowAnyOrigin()
-                      .AllowAnyMethod()
-                      .AllowAnyOrigin());
-
-            app.Run();
             app.Run();
         }
     }

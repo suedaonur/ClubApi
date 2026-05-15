@@ -21,7 +21,7 @@ public class GetAllClubsHandler : IRequestHandler<GetAllClubsQuery, List<Club>>
 
     public async Task<List<Club>> Handle(GetAllClubsQuery request, CancellationToken cancellationToken)
     {
-      
-        return await _repository.GetAllAsync();
+
+        return await _repository.GetAllWithIncludesAsync(e => e.Members);
     }
 }

@@ -5,7 +5,9 @@ using Application.Features.Students.Commands.RegisterStudent;
 using Application.Features.Students.Commands.UpdateStudent;
 using Application.Features.Students.Queries.GetAllStudents;
 using Application.Features.Students.Queries.GetByIdStudent;
+using Application.Features.Students.Queries.GetStudentClubs;
 using ClubUI.Application.Features.Students.Commands;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -59,6 +61,7 @@ namespace WebAPI.Controllers
             var result = await _mediator.Send(new DeleteStudentCommand { Id = id });
             return Ok(result);
         }
+        [AllowAnonymous]
         [HttpPost("verify-obs")]
         public async Task<IActionResult> VerifyObs([FromBody] VerifyObsCommand command)
         {
@@ -81,7 +84,7 @@ namespace WebAPI.Controllers
                 message = "Öğrenci numarası OBS sisteminde bulunamadı!"
             });
         }
-
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterStudentCommand command)
         {
@@ -92,6 +95,7 @@ namespace WebAPI.Controllers
             }
             return BadRequest(new { message = "Kayıt başarısız. Öğrenci numarası bulunamadı veya zaten kayıtlı." });
         }
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginStudentCommand command)
         {
@@ -103,6 +107,14 @@ namespace WebAPI.Controllers
             }
 
             return Unauthorized(new { message = "Öğrenci numarası veya şifre hatalı!" });
+        }
+        [AllowAnonymous]
+        [HttpGet("student/{studentId}")]
+        public async Task<IActionResult> GetStudentClubs([FromRoute] int studentId)
+        {
+            
+            var result = await _mediator.Send(new GetStudentClubsQuery { StudentId = studentId });           
+            return Ok(result);
         }
 
     }

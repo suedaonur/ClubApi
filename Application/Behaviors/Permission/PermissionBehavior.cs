@@ -1,8 +1,10 @@
-﻿using Application.Interfaces;
-
+﻿using Application.Features.Students.Commands.LoginStudent;
+using Application.Features.Students.Commands.RegisterStudent;
+using Application.Interfaces;
+using ClubUI.Application.Features.Students.Commands;
 using MediatR;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Http; // Bunun için WebAPI referansı gerekebilir veya sadece logic kurulur
+using System.Security.Claims;
 
 namespace Application.Behaviors;
 
@@ -15,9 +17,13 @@ public class PermissionBehavior<TRequest, TResponse> : IPipelineBehavior<TReques
     {
         _unitOfWork = unitOfWork;
     }
-
+     
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
+        if (request is LoginStudentCommand || request is RegisterStudentCommand || request is VerifyObsCommand)
+        {
+            return await next(); // Hiç kontrol etme, direkt geçsin
+        }
         // 1. İstek bir yetki gerektiriyor mu? (IPermissionRequest kontrolü)
         if (request is IPermissionRequest permissionRequest)
         {
