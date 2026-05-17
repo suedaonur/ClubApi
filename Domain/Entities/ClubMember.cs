@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +11,11 @@ namespace Domain.Entities
     {
         public int StudentId { get; set; } 
         public int ClubId { get; set; } 
-        public int RoleId { get; set; } 
+        public bool IsAdmin { get; set; }
+        public bool IsWriteable { get; set; }
+        public bool IsRemoveableMember { get; set; }
 
         public Student Student { get; set; }
         public Club Club { get; set; }
-        public Role Role { get; set; }
     }
 }

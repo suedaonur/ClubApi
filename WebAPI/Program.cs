@@ -1,4 +1,4 @@
-
+ï»¿
 using Application.Behaviors;
 using Application.Common.Security;
 using Application.Interfaces;
@@ -22,7 +22,7 @@ namespace WebAPI
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +30,7 @@ namespace WebAPI
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
-                    // Sonsuz döngüleri (Cycle) engellemek için
+                    // Sonsuz dÃ¶ngÃ¼leri (Cycle) engellemek iÃ§in
                     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
                     options.JsonSerializerOptions.WriteIndented = true;
                 });
@@ -44,7 +44,7 @@ namespace WebAPI
                 opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
-                    Description = "Lütfen sadece token metnini buraya yapýþtýrýn.",
+                    Description = "LÃ¼tfen sadece token metnini buraya yapÄ±ÅŸtÄ±rÄ±n.",
                     Name = "Authorization",
                     Type = SecuritySchemeType.Http,
                     BearerFormat = "JWT",
@@ -63,7 +63,7 @@ namespace WebAPI
                 });
             });
 
-            // --- 3. VERÝTABANI & REPOSITORY KAYITLARI ---
+            // --- 3. VERÄ°TABANI & REPOSITORY KAYITLARI ---
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -80,8 +80,11 @@ namespace WebAPI
             builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             //builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PermissionBehavior<,>));
 
-            // --- 5. AUTHENTICATION (KÝMLÝK) & AUTHORIZATION (YETKÝ) ---
+            // --- 5. AUTHENTICATION (KÄ°MLÄ°K) & AUTHORIZATION (YETKÄ°) ---
             builder.Services.AddScoped<JwtProvider>();
+
+            // --- RAG SERVICE ---
+            builder.Services.AddSingleton<IRegulationRagService, Infrastructure.Services.RegulationRagService>();
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
@@ -98,7 +101,7 @@ namespace WebAPI
                         ClockSkew = TimeSpan.Zero
                     };
 
-                    // Hata ayýklama loglarý (Debug penceresinde görünür)
+                    // Hata ayÄ±klama loglarÄ± (Debug penceresinde gÃ¶rÃ¼nÃ¼r)
                     options.Events = new JwtBearerEvents
                     {
                         OnAuthenticationFailed = context => {
@@ -106,7 +109,7 @@ namespace WebAPI
                             return Task.CompletedTask;
                         },
                         OnChallenge = context => {
-                            System.Diagnostics.Debug.WriteLine("!!! UYARI: Sunucuya token gelmedi veya format hatalý.");
+                            System.Diagnostics.Debug.WriteLine("!!! UYARI: Sunucuya token gelmedi veya format hatalÄ±.");
                             return Task.CompletedTask;
                         }
                     };
@@ -126,7 +129,11 @@ namespace WebAPI
         
             var app = builder.Build();
 
-            // --- PIPELINE SIRALAMASI (BURASI HAYATÝ ÖNEMDEDÝR) ---
+            // Initialize RAG Service
+            var ragService = app.Services.GetRequiredService<IRegulationRagService>();
+            await ragService.InitializeAsync();
+
+            // --- PIPELINE SIRALAMASI (BURASI HAYATÄ° Ã–NEMDEDÄ°R) ---
 
             if (app.Environment.IsDevelopment())
             {

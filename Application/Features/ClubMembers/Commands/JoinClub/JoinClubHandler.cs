@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,11 +22,21 @@ public class JoinClubHandler : IRequestHandler<JoinClubCommand, int>
 
     public async Task<int> Handle(JoinClubCommand request, CancellationToken cancellationToken)
     {
+        var existingMembers = await _repository.GetAllAsync();
+        var isAlreadyMember = existingMembers.Any(x => x.StudentId == request.StudentId && x.ClubId == request.ClubId && !x.IsDeleted);
+
+        if (isAlreadyMember)
+        {
+            throw new InvalidOperationException("Bu kulübe zaten üyesiniz.");
+        }
+
         var clubMember = new ClubMember
         {
             StudentId = request.StudentId,
             ClubId = request.ClubId,
-            RoleId = request.RoleId
+            IsAdmin = false,
+            IsWriteable = false,
+            IsRemoveableMember = false
         };
 
         await _repository.AddAsync(clubMember);

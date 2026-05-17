@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Linq;
@@ -14,6 +14,6 @@ public interface IGenericRepository<T> where T : class
     void Update(T entity);
     void Delete(T entity);
     
-    Task<T> GetAsync(Expression<Func<T, bool>> predicate);
+    Task<T> GetAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
     Task<List<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes);  //İlişkili tabloları getiricez
 }

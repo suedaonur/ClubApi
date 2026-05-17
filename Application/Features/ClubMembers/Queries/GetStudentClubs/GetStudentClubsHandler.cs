@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,8 +22,7 @@ public class GetStudentClubsHandler : IRequestHandler<GetStudentClubsQuery, List
     {
         
         var memberships = await _repository.GetAllWithIncludesAsync(
-            x => x.Club,
-            x => x.Role
+            x => x.Club
         );
 
 

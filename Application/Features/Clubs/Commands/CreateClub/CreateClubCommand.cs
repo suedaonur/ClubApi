@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,4 +11,5 @@ public class CreateClubCommand : IRequest<int> // Geriye yeni oluşan Kulüp ID'
 {
     public string Name { get; set; }
     public string Description { get; set; }
+    public int PresidentId { get; set; }
 }

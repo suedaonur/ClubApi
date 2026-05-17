@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,9 +21,8 @@ public class GetClubMembersHandler : IRequestHandler<GetClubMembersQuery, List<C
     public async Task<List<ClubMember>> Handle(GetClubMembersQuery request, CancellationToken cancellationToken)
     {
         var members = await _repository.GetAllWithIncludesAsync(
-        x => x.Student,
-        x => x.Role
-    );
+            x => x.Student
+        );
 
         return members.Where(x => x.ClubId == request.ClubId).ToList();
     }

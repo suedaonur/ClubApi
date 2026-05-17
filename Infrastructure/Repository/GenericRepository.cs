@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -18,8 +18,15 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
     public async Task AddAsync(T entity) => await _context.Set<T>().AddAsync(entity);
     public void Update(T entity) => _context.Set<T>().Update(entity);
     public void Delete(T entity) => _context.Set<T>().Remove(entity);
-    public async Task<T> GetAsync(Expression<Func<T, bool>> predicate)
-    => await _context.Set<T>().FirstOrDefaultAsync(predicate);
+    public async Task<T> GetAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+    {
+        IQueryable<T> query = _context.Set<T>();
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+        return await query.FirstOrDefaultAsync(predicate);
+    }
     public async Task<List<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes)
     {
         IQueryable<T> query = _context.Set<T>();

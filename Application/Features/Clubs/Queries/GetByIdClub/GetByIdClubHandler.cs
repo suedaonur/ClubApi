@@ -1,4 +1,4 @@
-﻿using Application.Features.Clubs.Queries.GetByIdClub;
+using Application.Features.Clubs.Queries.GetByIdClub;
 using Application.Interfaces;
 using Domain.Entities;
 using MediatR;
@@ -15,6 +15,11 @@ public class GetByIdClubHandler : IRequestHandler<GetByIdClubQuery, Club>
 
     public async Task<Club> Handle(GetByIdClubQuery request, CancellationToken cancellationToken)
     {
-        return await _repository.GetByIdAsync(request.Id);
+        return await _repository.GetAsync(
+            c => c.Id == request.Id,
+            e => e.Members,
+            e => e.Posts,
+            e => e.President
+        );
     }
 }

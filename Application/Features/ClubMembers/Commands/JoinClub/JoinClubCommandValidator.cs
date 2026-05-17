@@ -1,4 +1,4 @@
-﻿using Application.Features.ClubMembers.Commands.JoinClub;
+using Application.Features.ClubMembers.Commands.JoinClub;
 using FluentValidation;
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,5 @@ public class JoinClubCommandValidator : AbstractValidator<JoinClubCommand>
     {
         RuleFor(x => x.StudentId).GreaterThan(0).WithMessage("Geçerli bir öğrenci seçilmelidir.");
         RuleFor(x => x.ClubId).GreaterThan(0).WithMessage("Geçerli bir kulüp seçilmelidir.");
-        RuleFor(x => x.RoleId).GreaterThan(0).WithMessage("Üye için bir rol atanmalıdır.");
     }
 }

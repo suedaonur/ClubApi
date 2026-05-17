@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using FluentValidation;
 using System.Text.Json;
 
@@ -35,6 +35,16 @@ public class ExceptionMiddleware
         {
             statusCode = (int)HttpStatusCode.BadRequest;
             message = validationException.Errors.Select(x => x.ErrorMessage);
+        }
+        else if (exception is UnauthorizedAccessException unauthorizedException)
+        {
+            statusCode = (int)HttpStatusCode.Forbidden;
+            message = unauthorizedException.Message;
+        }
+        else if (exception is Exception customException)
+        {
+            statusCode = (int)HttpStatusCode.BadRequest;
+            message = customException.Message;
         }
 
         context.Response.StatusCode = statusCode;

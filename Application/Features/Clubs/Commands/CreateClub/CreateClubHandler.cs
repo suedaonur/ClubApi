@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,11 +12,16 @@ namespace Application.Features.Clubs.Commands.CreateClub;
 public class CreateClubHandler : IRequestHandler<CreateClubCommand, int>
 {
     private readonly IGenericRepository<Club> _repository;
+    private readonly IGenericRepository<ClubMember> _clubMemberRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public CreateClubHandler(IGenericRepository<Club> repository, IUnitOfWork unitOfWork)
+    public CreateClubHandler(
+        IGenericRepository<Club> repository, 
+        IGenericRepository<ClubMember> clubMemberRepository, 
+        IUnitOfWork unitOfWork)
     {
         _repository = repository;
+        _clubMemberRepository = clubMemberRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -25,11 +30,24 @@ public class CreateClubHandler : IRequestHandler<CreateClubCommand, int>
         var club = new Club
         {
             Name = request.Name,
-            Description = request.Description
+            Description = request.Description,
+            PresidentId = request.PresidentId
         };
       
         await _repository.AddAsync(club);
         await _unitOfWork.SaveChangesAsync(); 
+
+        var clubMember = new ClubMember
+        {
+            ClubId = club.Id,
+            StudentId = request.PresidentId,
+            IsAdmin = true,
+            IsWriteable = true,
+            IsRemoveableMember = true
+        };
+
+        await _clubMemberRepository.AddAsync(clubMember);
+        await _unitOfWork.SaveChangesAsync();
 
         return club.Id;
     }

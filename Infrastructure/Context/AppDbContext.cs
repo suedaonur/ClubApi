@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -19,9 +19,6 @@ namespace Infrastructure.Context
         public DbSet<Club> Clubs { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<Vote> Votes { get; set; }
-        public DbSet<Role> Roles { get; set; }
-        public DbSet<Permission> Permissions { get; set; }
-        public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<ClubMember> ClubMembers { get; set; }
         public DbSet<Regulation> Regulations { get; set; }
 
@@ -29,7 +26,11 @@ namespace Infrastructure.Context
         {
             base.OnModelCreating(modelBuilder);
 
-            
+            modelBuilder.Entity<Club>()
+                .HasOne(c => c.President)
+                .WithMany()
+                .HasForeignKey(c => c.PresidentId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
